@@ -1083,12 +1083,10 @@ class GirderGraphEngine:
         if len(sfd) == 0:
             return {"Ra": None, "Rb": None}
             
-        # Use abs() — the arrow already indicates upward direction.
-        # Use sfd[-2] for Rb: the last node is often zero-padded by _smooth_nodal.
-        rb_idx = -2 if len(sfd) > 2 else -1
+        # sfd[-1] is the shear at the right support.
         return {
             "Ra": float(abs(sfd[0])),
-            "Rb": float(abs(sfd[rb_idx])),
+            "Rb": float(abs(sfd[-1])),
         }
 
     def extract_loads(self, load_case: str) -> list[dict]:
@@ -1349,7 +1347,7 @@ class GirderGraphEngine:
             if val is not None:
                 ax.text(
                     x, y_arrow_base - 0.06,
-                    f"{abs(val):.1f} kN",
+                    f"{abs(val):.2f} kN",
                     ha=ha, va="top",
                     fontsize=_STYLE["reaction_fontsize"],
                     fontweight="normal",
