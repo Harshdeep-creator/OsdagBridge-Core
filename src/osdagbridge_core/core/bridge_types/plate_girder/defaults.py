@@ -272,25 +272,11 @@ def _update_typical_section_defaults(input_dict: dict) -> None:
     _rl_load      = railing_dead_load_kN_m()   # kN/m — IRC 6:2017 Cl.206.5 (150 kg/m)
     _rl_height_m  = 1100 / 1e3                 # m    — IRC 5:2015 Cl.109.7.2.3 minimum
 
-    rl_mode = str(input_dict.get(KEY_RL_LOAD_MODE) or "").strip()
-    rl_type = str(input_dict.get(KEY_RL_TYPE) or "").strip()
-    if rl_mode == "Custom" or rl_type == "Custom":
-        if not rl_type:
-            input_dict[KEY_RL_TYPE] = "IRC 5 - RCC Railing"
-        if input_dict.get(KEY_RL_WIDTH) in (None, ""):
-            input_dict[KEY_RL_WIDTH] = DEFAULT_RAILING_WIDTH
-        if input_dict.get(KEY_RL_HEIGHT) in (None, ""):
-            input_dict[KEY_RL_HEIGHT] = _rl_height_m
-        if not rl_mode:
-            input_dict[KEY_RL_LOAD_MODE] = "Custom"
-        if input_dict.get(KEY_RL_LOAD_VALUE) in (None, ""):
-            input_dict[KEY_RL_LOAD_VALUE] = _rl_load
-    else:
-        _update(KEY_RL_TYPE,       "IRC 5 - RCC Railing")
-        _update(KEY_RL_WIDTH,      DEFAULT_RAILING_WIDTH)        # m
-        _update(KEY_RL_HEIGHT,     _rl_height_m)                 # m
-        _update(KEY_RL_LOAD_MODE,  "As per IRC 6")
-        _update(KEY_RL_LOAD_VALUE, _rl_load)                     # kN/m
+    _update(KEY_RL_TYPE,       "IRC 5 - RCC Railing")
+    _update(KEY_RL_WIDTH,      DEFAULT_RAILING_WIDTH)        # m
+    _update(KEY_RL_HEIGHT,     _rl_height_m)                 # m
+    _update(KEY_RL_LOAD_MODE,  "As per IRC 6")
+    _update(KEY_RL_LOAD_VALUE, _rl_load)                     # kN/m
 
     # --- Wearing Course sub-tab ---
     # Density and thickness match on_wearing_material_changed() in typical_section_details.py
@@ -953,8 +939,31 @@ def solve_extend_basic_input_dict(basic_input_dict: dict) -> None:
 
     footpath_str = str(basic_input_dict.get(KEY_FOOTPATH, 'None')).strip()
 
+    # The defaults call overwrites the railing fields. Put a custom entry back.
+    rl_mode = str(basic_input_dict.get(KEY_RL_LOAD_MODE) or "").strip()
+    rl_type = str(basic_input_dict.get(KEY_RL_TYPE) or "").strip()
+    saved_railing = None
+    if rl_mode == "Custom" or rl_type == "Custom":
+        saved_railing = {
+            key: basic_input_dict.get(key)
+            for key in (
+                KEY_RL_TYPE,
+                KEY_RL_WIDTH,
+                KEY_RL_HEIGHT,
+                KEY_RL_LOAD_MODE,
+                KEY_RL_LOAD_VALUE,
+            )
+        }
+
     # Fill sub-tab defaults before reading any typical-section keys (e.g. footpath width)
     _update_typical_section_defaults(basic_input_dict)
+
+    if saved_railing is not None:
+        for key, value in saved_railing.items():
+            if value not in (None, ""):
+                basic_input_dict[key] = value
+        if not rl_mode and rl_type == "Custom":
+            basic_input_dict[KEY_RL_LOAD_MODE] = "Custom"
 
     _update_loading_tab_defaults(basic_input_dict)
 
