@@ -139,14 +139,11 @@ def railing_dead_load_kN_m(load_kN_per_m: float | None = None) -> float:
 
 
 def railing_load_from_inputs(additional_inputs: dict) -> float | None:
-    """Extract user-specified railing load (kN/m) from the additional-inputs dict.
+    """Extract the railing load (kN/m) from the additional-inputs dict.
 
-    Returns ``None`` when the mode is not Custom or the value is empty.
+    Returns ``None`` only when the value is empty.
     ``railing_dead_load_kN_m()`` then applies the IRC 6:2017 Cl.206.5 default.
     """
-    mode = str(additional_inputs.get(KEY_RL_LOAD_MODE) or "").strip()
-    if mode != "Custom":
-        return None
     val = additional_inputs.get(KEY_RL_LOAD_VALUE)
     if val is None or str(val).strip() == "":
         return None
