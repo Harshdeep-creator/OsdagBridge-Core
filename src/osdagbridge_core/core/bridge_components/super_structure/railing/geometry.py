@@ -138,16 +138,14 @@ def railing_dead_load_kN_m(load_kN_per_m: float | None = None) -> float:
     return IRC6_2017.cl_206_5_railing_load() * 9.81 / 1000.0
 
 
-def railing_load_from_inputs(additional_inputs: dict) -> float | None:
-    """Extract the railing load (kN/m) from the additional-inputs dict.
+_KEY_RAILING_LOAD = "railing_load_value"
 
-    Returns ``None`` only when the value is empty.
-    ``railing_dead_load_kN_m()`` then applies the IRC 6:2017 Cl.206.5 default.
+
+def railing_load_from_inputs(additional_inputs: dict) -> float | None:
+    """Extract user-specified railing load (kN/m) from the additional-inputs dict.
+
+    Returns ``None`` when the key is absent, in which case
+    ``railing_dead_load_kN_m()`` will apply the IRC 6:2017 Cl.206.5 default.
     """
-    val = additional_inputs.get(KEY_RL_LOAD_VALUE)
-    if val is None or str(val).strip() == "":
-        return None
-    try:
-        return float(val)
-    except (TypeError, ValueError):
-        return None
+    val = additional_inputs.get(_KEY_RAILING_LOAD)
+    return float(val) if val is not None else None

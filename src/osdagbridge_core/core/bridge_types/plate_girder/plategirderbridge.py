@@ -84,7 +84,7 @@ from osdagbridge_core.core.utils.common import (
     KEY_SL_FORCE_LONGITUDINAL, KEY_SL_FORCE_TRANSVERSE,
     KEY_WL_TRANSVERSE_WIND_FORCE, KEY_WL_LONGITUDINAL_WIND_FORCE, KEY_WL_VERTICAL_WIND_FORCE,
     KEY_MD_WIDTH,
-    KEY_RL_WIDTH,
+    KEY_RL_WIDTH, KEY_RL_LOAD_VALUE,
     KEY_TS_DECK_OVERHANG,
     KEY_TS_DECK_THICKNESS,
     KEY_TS_NO_OF_GIRDERS,
@@ -256,9 +256,6 @@ from osdagbridge_core.core.bridge_components.super_structure.deck.geometry impor
 )
 from osdagbridge_core.core.bridge_components.super_structure.crash_barrier.geometry import (
     crash_barrier_load_from_inputs,
-)
-from osdagbridge_core.core.bridge_components.super_structure.railing.geometry import (
-    railing_load_from_inputs,
 )
 from osdagbridge_core.core.bridge_components.super_structure.shear_studs.geometry import (
     min_stud_head_diameter,
@@ -1391,7 +1388,10 @@ class PlateGirderBridge:
         wc_t_m = float(self.input_dict[KEY_WC_THICKNESS]) / 1000.0
         wc_rho  = float(self.input_dict[KEY_WC_DENSITY])
         barrier_load_kN_m = crash_barrier_load_from_inputs(self.input_dict)
-        railing_load_kN_m = railing_load_from_inputs(self.input_dict)
+        try:
+            railing_load_kN_m = float(self.input_dict.get(KEY_RL_LOAD_VALUE))
+        except (TypeError, ValueError):
+            railing_load_kN_m = None
 
         model = self.grillage_model
         model.create_self_weight_load()
